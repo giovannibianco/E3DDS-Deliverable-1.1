@@ -1,0 +1,950 @@
+\documentclass[12pt,a4paper]{article}
+%%%! Tjulin: I would use \documentclass[12pt,a4paper]{article} for the benefit of European printers 
+%% JW: DONE
+
+% \usepackage{array}
+% \usepackage{pbox}
+% \usepackage{hanging}
+\usepackage{fancyhdr}
+% \usepackage{caption}
+% \usepackage{enumitem}
+\usepackage{fancyvrb}
+\usepackage{color}
+\usepackage{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{url}
+\usepackage[titletoc,title]{appendix} %%%! Tjulin: Added this for the appendices. 
+%% JW Thanks.
+
+\usepackage{xspace}
+
+\usepackage{rotating}
+\usepackage{wrapfig}
+\usepackage{hyperref}
+
+\usepackage{cite} %
+
+\usepackage[gen]{eurosym}
+\usepackage{gensymb}
+
+\usepackage{amssymb}
+
+% \usepackage{todonotes}
+\usepackage[colorinlistoftodos,prependcaption,textsize=small]{todonotes}
+\newcommand{\tobedone}[2][1=]{\todo[inline,linecolor=red,backgroundcolor=red!25,bordercolor=red]{#2}}
+%% \renewcommand{\todo}[1]{\textcolor{red}{TODO: #1}}
+
+% \usepackage{draftwatermark}
+% \SetWatermarkText{draft}
+% \SetWatermarkScale{6}
+
+\fancypagestyle{plain}{ %
+  \fancyhf{} % remove everything
+  \renewcommand{\headrulewidth}{0pt} % remove lines as well
+  \renewcommand{\footrulewidth}{0pt}
+}
+
+\hyphenation{EISCAT}
+
+\input{abbrev}
+
+% \setlength{\topskip}{0mm}
+\setlength{\headheight}{15pt}
+% \setlength{\topmargin}{-5.4mm}
+% \setlength{\textheight}{230mm}
+\setlength{\textwidth}{180mm}
+\setlength{\oddsidemargin}{-5.0mm}
+% \setlength{\evensidemargin}{10.0mm}
+% \setlength{\captionmargin}{7mm}
+
+\title{
+{\bf Deliverable Document 1.1} \\
+Update to on-site computing software and hardware architecture recommendation}
+\author{E3DDS Team~\footnote{
+Anders Tjulin (EISCAT) {\tt anders.tjulin@eiscat.se};
+Ari Lukkarinen (CSC) {\tt ari.lukkarinen@csc.fi};
+Assar Westman (EISCAT) {\tt Assar.Westman@eiscat.se};
+Carl-Fredrik Enell (EISCAT) {\tt carl-fredrik.enell@eiscat.se};
+Dan Johan Jonsson (UiT) {\tt dan.jonsson@uit.no};
+Janos Nagy (NSC) {\tt fconagy@nsc.liu.se};
+Harri Hellgren (EISCAT) {\tt harri@eiscat.se};
+Ingemar H\"{a}ggstr\"{o}m (EISCAT) {\tt ingemar.haggstrom@eiscat.se};
+Mattias Wadenstein (UmU) {\tt maswan@hpc2n.umu.se};
+Roy Dragseth (UiT) {\tt roy.dragseth@uit.no};
+John White (NeIC) {\tt john.white@cern.ch}}}
+
+\date{\today}
+
+\begin{document}
+
+\pagestyle{fancy}
+\lhead{\bf E3DDS project}
+\rhead{\bf 1: Hardware and software}
+
+\maketitle
+\par\noindent
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[scale=0.18]{NEIC_logo_screen_black.pdf}
+  %\vspace{-0.09in}
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+  \hfill
+  %\includegraphics[scale=0.25]{EISCAT3Dlogo1.pdf}
+  % New official logo with green text
+  \includegraphics[width=0.75\linewidth]{e3d-logo-green-500px}
+\end{minipage}
+
+\begin{center}
+\begin{tabular}{|l|l|} \hline
+\large \bf Date & \large \bf Comments \\ \hline
+\large 2019/09/30 & First draft started \\ \hline
+\large \today  & Current version\\ \hline
+\end{tabular}
+\end{center}
+
+\newpage
+\tableofcontents
+\newpage
+
+%%%! Tjulin: It would be nice with an "Executive Summary" or "Abstract" for the lazy reader
+
+\section{Executive Summary} \label{exec-summ}
+
+% \todo[inline]{Needs to be re-written}
+% \tobedone{JW: Needs to be rewritten}
+
+The on-site computing, network and storage needs for the \ED transmitting and receiving sites have been discussed and updated from the first version of this document, E3DDS Deliverable 1 ``On-site computing software and hardware architecture recommendation'' (found at~\cite{e3dds-do1}).
+The Wide Area Network connections between the sites are also presented.
+The main updates are related to the Wide Area Network connections between the sites and the architecture of the Second Beam former.
+
+The long-term cost of a high-capacity optical Wide Area Network between the \ED sites has come down to compete with more traditional networking.
+An option has been found that allows to deploy all the computing \einfra away from the remote sites to the central site.
+This should be an interesting option for \ED as operational costs can be reduced and procedures made more efficient.
+Also, by concentrating computing \einfra in one location, this reduces latency and jitter between nodes, and presents an opportunity to build dual-purpose computing clusters.
+The online data processing clusters may be re-configured as useful user analysis clusters in periods when the radar is off.
+
+The Second Beam former is split into a two-stage process between the First Stage Receive Units and the Ring Buffer Beam Former clusters.
+Using this model, it is estimated that one CPU of a suitable server~\cite{amd-epyc} can form, in real-time, the 10 narrow-angle beams from one wide-angle beam at \NBW\ bandwidth.
+Therefore 10 such servers are required for each receive site and 2 for the transmitting site.
+There are two possible choices of input network architecture between the First Stage Receiving Units to the second beam former: a switch fabric or direct connections from FSRUs to second beamformer servers.
+Whether these connections are made internally within a site or over an optical WAN should make no difference to the online data processing performance.
+
+The estimates for the file writer, that writes the summed second beam former results to files, and the prompt computing, that produces higher-level time and space-integrated data products are unchanged.The long-term cost of a high-capacity optical Wide Area Network between the \ED sites has come down to compete with more traditional networking.
+The optimum configuration for the site-local buffer is still proposed to be RAID-5 SSDs directly integrated to the second beam former nodes.
+
+\section{Purpose}
+\label{purpose}
+%%%! Tjulin: This little section looks more like "Planned work to do" than "Purpose of the document and work done". Could be rewritten somewhat.
+%% JW re-written
+The purpose of this document is to provide an update to the  Deliverable 1 of this projects that described and recommended the on-site computing software and hardware architectures for \ED. 
+These recommendations are the outcome of iterative discussions between the \ED software engineers and scientists and national provider deployment experts. 
+The architecture is a result of close discussions and work between the on-site computing (beam former, Level 2 data processing, Level 3 data analysis and possibly satellite screening code) developers, EISCAT scientists and the operators of the national \einfras.
+
+%%%! Tjulin: Who is the target reader of the report? 
+%% JW Added.
+The target readers of this document are primarily the \ED project management and scientists.
+The \ED project management can get an indication of the actual amount of computing at the different \ED sites.
+Also, another target is the providers of the national \einfras where \ED will be located.
+The national \einfra providers can see the quantity and type of computing required for \ED and make determinations whether some can be run in existing computing centres.
+
+\section{Introduction}
+\label{intro}
+\todo[inline]{This document repeats a lot. Maybe this document should concentrate on the architecture of SW and HW and cost estimates and cite other documents for background details. Could some sections of DO2 be moved to this document instead?}
+\todo[inline]{HH: Yes we could but can we still change DO2?}
+The \ESA will establish \ED, a flexible multistatic high power radar system, that
+will enable comprehensive three-dimensional vector observations of the atmosphere
+and ionosphere above Northern Fenno-Scandinavia.  
+
+The use of new radar technology, combined with the latest advances within digital signal processing,
+will achieve ten times higher temporal and spatial resolution than
+obtained by the present \EC radar systems. For the first time, \EC will also be able to measure continuously.  
+The flexibility of the \ED system will enable scientists to investigate upper-atmospheric and 
+ionospheric phenomena at both large and small scales unobtainable by the present systems.
+
+In its first stage, the \ED system will consist of three \RSs:
+one having both {\bf T}ransmitting ({\bf TX}) and {\bf R}eceiving ({\bf RX})
+capabilities and two with only RX capability.  
+The sites will
+be remote-controlled and located in three different countries (Finland,
+Norway and Sweden) and will be separated geographically by
+approximately 130~km.  
+Two additional receiver sites, at distances 200-250~km from the transmit site, 
+are planned for the full \ED system at a later stage.
+
+\todo[inline]{CFE: The following sections on data (I think I wrote them) are not necessary in this document. Can I delete them?}
+\todo[inline,color=red]{JW: Done. Replaced with below...}
+\iffalse
+\ED will produce data at three levels, from raw samples to physical parameters. Table~\ref{tab:datalevels} summarizes the \ED data levels.
+\input{eiscat3d-data-levels-a}
+This data will be curated, archived and catalogued.
+This encompasses the management of the data throughout
+its lifecycle, from initial storage to the time when it is moved to
+long-term preservation for posterity or becomes obsolete and is
+deleted. Metadata will be produced according to standardized metadata models and transferred to search portals. 
+
+Also, for scientific publications using \ED data, a system to cite the data sets used should be provided in compliance with recommendations from funding agencies and the EU (FAIR principles are gaining importance: Findable, Accessible, Interoperable, Reusable). %%%! Tjulin: Is this a recommendation or a fact? 
+Scientific work using and visualizing \ED data, or deriving other physical parameters by combining \ED data with other data, represents a fourth level. Derived data products produced by \ED users are indicated as Level~4 in the table, in addition to the three data levels produced by \ED.
+%% CFE: use reference(s) to Fig 1
+The \fsru attached to each \SA (Fig.~\ref{fig:central}) produces voltage-domain data from 10 
+wide-angle beams  
+as a series of data (level~1a) as a {User Datagram Protocol} (UDP)~\cite{udp} bit-stream.
+These data are buffered on the site RAM ring buffer and may be buffered for
+4~months on the \OC storage.  
+Likewise, the narrow angle beam files
+(level~1b) from the second beam former are buffered for 4~months
+on the \OC storage.  
+A fraction (dependent on the experiment being
+performed) of the first and second stage beam formed data will be
+stored as persistent level~1 data files and sent to the \DCs.
+
+%%%! Tjulin: Do we need to explain the E3D setup?  The data levels are defined but not "first stage" "sub-array" and so on.
+%% Check with CF and Ingemar... I 
+
+From the level~1b data, it will be possible to generate
+\emph{lag profiles} (level~2 data), i.e. transform the data to the autocorrelation function domain. This is equivalent to power spectra, and thus the volume of level~2 data can be reduced by time averaging.
+Physical parameters (level~3a data) will also be extracted by means of an inverse incoherent scatter model. 
+The level~2 and~3a data from the three sites will be combined to produce level~3b data products: three-dimensional volume renderings of both scalar parameters and velocity vectors.
+
+% All the data of levels~2 and~3 are to be archived at the \DCs.
+The data will be buffered at the sites or / and a central storage 
+and then transferred to the \DCs for long-term storage and access.
+The previsioned container format of the data received at the \DCs from the \OC is \HDF~\cite{hdf}
+(a standard data container library available for all considered programming languages). \HDF~based file formats are used by other radar systems such as AMISR~\footnote{Craig Heinselman, internal communication} and Millstone Hill (\url{https://github.com/MITHaystack/digital_rf}).
+\fi
+%%%! Tjulin: The "or / and" looks a bit odd in a document meant to provide recommendations on these issues.
+%% CFE: not really since this deliverable concerns beamforming. Networking is a separate issue although addressed by NeIC (???)
+
+\ED will produce data at three main levels, from raw samples to physical parameters. Table~\ref{tab:datalevels} summarizes the \ED data levels.
+\input{eiscat3d-data-levels-a}
+A more detailed description of the production of the various \ED data can be found in~\cite{e3dds-do1}.
+
+\section{WAN configurations} \label{sec:wan}
+
+The \ED sites need to be connected over a Wide-Area Network (WAN)~\footnote{A WAN is any network that is not internal to a site.}.
+The WAN must meet capacity and latency requirements to transmit the data produced at the \ED sites, control updates, as well as general remote management, connectivity to the long-term data center storage and direct or indirect connectivity to the internet for users.
+The base requirement for \ED operations is that the data for \NBW\ case is processed in real-time from antennas to data storage.
+
+Here, we make an assumption that a site is designated to contain the ``central'' computing and radar operations. 
+A logical assumption as the transmitter is physically located at the TX site in Skibotn.
+There are four options to connect the \ED sites considered.
+
+\subsection{IP Routed connections}
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{Site_Connections.png}
+\caption{\ED sites are connected via an IP-routed ring with 100~Gb/s total capacity. All online data clusters and associated LAN \einfra must be deployed to the RX sites.\label{fig:site-connections}}
+\end{figure}
+
+Inter-site connectivity is provided by an EISCAT-3D ``LAN'' (IP-routed) ring connecting the local networks of each of the sites.
+There is a connection to each National Research and Education Network (NREN) for upstream traffic and the total aggregate ring capacity is 100~Gb/s.
+This implies an averaged maximum data rate of 33~Gb/s simultaneous output from each site.
+
+This WAN option requires that the first and second beam forming are performed at each site.
+Depending on the output rate of the prompt computing processing, this could be situated at a centralized location on the IP-routed ring.
+
+\subsection{Optical DWDM connections}
+\label{ssec:optical}
+
+The Dense Wavelength Division Multiplexing~\cite{dwdm} (DWDM), an optical technology used to increase bandwidth over existing fiber optic backbones, provides an attractive alternative for connecting the \ED sites.
+
+DWDM works by combining and transmitting multiple signals simultaneously at different wavelengths on the same fiber. 
+In effect, one fiber is transformed into multiple virtual fibers. 
+A key advantage to DWDM is that it is protocol and bit-rate independent. 
+DWDM-based networks can transmit data in IP and other protocols and can handle bit rates between 100~Mb/s and 2.5~Gb/s. 
+Therefore, DWDM-based networks can carry different types of traffic at different speeds over an optical channel.
+From a Quality of Service standpoint, DWDM-based networks create a lower cost way to quickly respond to bandwidth demands and protocol changes.
+% In this case, the proposed equipment provides DWDM waves each with a capacity of 400~Gb/s.
+
+\subsubsection{Option 1}
+Here DWDM is used to connect the \ED RX sites to a central location.
+\label{sssec:option1}
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{photon_option_1.png}
+\caption{\ED RX sites are connected to a central location via $2\times 100 $~Gb/s DWDM optical connections. The prompt computing nodes may be deployed to the central site. \label{fig:option_1}
+}
+\end{figure}
+Considering that the requirement is to process \NBW\ online data in realtime.
+Working backwards, from prompt computing to FSRUs, along the online data processing chain:
+\bitm
+\item Prompt computing output can easily be sent over the WAN to central site.
+\item The \NBW\ output of the \SBF\ of each RX site can be sent to a central location for prompt computing processing;
+\item The output data rate of the FSRUs, on RX sites in \NBW\ mode, to \RB\ memory is too large for such a WAN.
+\eitm
+
+\subsubsection{Option 2a}
+\label{sssec:option2a}
+
+Here the capacity of the DWDM connection is sized such that the
+\einfra for the 
+online data processing chain from \RB\ nodes onwards is located in a central computing location i.e. there is computing or storage capacity on the remote sites.
+The FSRUs connect to an ethernet switching fabric that subsequently connects to the optical WAN as shown in Figure~\ref{fig:option_2a}.
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{photon_option_2a.png}
+\caption{Site connections assuming $40\times100$~Gb/s optical connection between central and RX sites. All RX site computing clusters amay be moved to the central site. \label{fig:option_2a}
+}
+\end{figure}
+From Table~\ref{tab:fsru-rates-all}, it can be seen that the capacity between the remote and central sites must be able to handle the data rate from FSRUs in \WBW\ operation mode from RX sites i.e. $\approx 1.1$~Tb/s.
+If the maximum beams at \WBW\ are produced then the capacity required is $\approx 3.6$~Tb/s.
+
+% As shown in Section~\ref{}
+
+\subsubsection{Option 2b}
+\label{sssec:option2b}
+This optical DWDM WAN option, shown in Figure~\ref{fig:option_2b}, is similar to Section~\ref{sssec:option2a} in concept, except that the FSRUs are connected directly to the optical network.
+The ethernet-optical switches at the remote and central sites are omitted.
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{photon_option_2b.png}
+\caption{Site connections assuming $60\times100$~Gb/s optical connection between central and RX sites. All RX site computing clusters and associated LAN may be moved to the central site.\label{fig:option_2b}
+}
+\end{figure}
+
+The long-term cost of a high-capacity optical Wide Area Network between the \ED sites has come down to compete with more traditional networking.
+An option has been found that allows to deploy all the computing \einfra away from the remote sites to the central site.
+This should be an interesting option for \ED as operational costs can be reduced and procedures made more efficient.
+Also, by concentrating computing \einfra in one location, this reduces latency and jitter between nodes, and presents an opportunity to build dual-purpose computing clusters.
+The online data processing clusters may be re-configured as useful user analysis clusters in periods when the radar is off.
+
+Parallel computing calculations, such as 3-D calculations from multi-static measurements, normally rely on message passing interfaces that are extremely sensitive to network latency and jitter.
+\subsection{Site computing deployment} \label{ssec:site-comp}
+
+A consideration when connecting the \ED sites over WAN is the overall network cost compared to the savings in operational costs.
+Locating computing clusters at the RX site(s) will incur an increased  operational cost. Although, this cost can be mitigated by use of remote cluster management software for operating system and hardware.
+The majority of operations on a cluster are performed remotely.
+Only hardware-related issues such as failures and upgrades need to be addressed with the physical presence of personnel. 
+Typically the warranty and service contracts of computing hardware (servers) are priced per unit.
+Therefore the price will not be appreciably different if the computing servers are distributed over RX sites or located in one central site.
+
+Table~\ref{tab:site-computing} gives a summary of the various computing \einfra elements that must be deployed to the remote RX sites according to each WAN connection scenario.
+\input{site-computing}
+As can be seen in Table~\ref{tab:site-computing}, it is possible to move all \einfra from the RX sites to the central site. 
+Whether this is cost-effective remains to be seen.
+What can be seen is there is an option (Optical 2a) that allows to deploy all the computing \einfra away from the RX sites to the central site.
+
+This should be an interesting option for \ED as operational costs can be reduced and procedures made more efficient.
+Operational costs may be reduced by virtue of not having to travel to the remote sites for hardware-related issues~\footnote{Remote management of clusters is standard procedure these days so operating system and even BIOS/UEFI issues can be handled remotely.}. 
+Also, by concentrating computing \einfra in one location and connecting via a LAN (within server racks), this reduces latency and jitter between nodes (compared to nodes connected via a WAN), and presents an opportunity to build dual-purpose computing clusters.
+The online data processing clusters may be re-configured as useful user analysis clusters in periods when the radar is off.
+Complicated parallel computing calculations such as \ED 3-D analysis from multi-static measurements, performed on traditional hardware, rely on interfaces such as MPI~\cite{mpi} that are sensitive to latency and jitter between computing nodes.
+
+It is expected that 22 RBBF nodes are required for the RX and TX sites, see Section~\ref{ssec:sbf}, and therefore a powerful cluster may be created.
+For the prompt computing nodes, the benchmarks are still not yet precisely measured.
+It is expected that $\approx 14$ ``commodity'' servers are required per RX site which implies a $\approx 30$ node cluster can be built.
+By using techniques such as virtualization or high performance computing batch queueing (see~\cite{e3dds-do3}) these online data processing clusters can be used for other tasks such as user analysis during the time that the radar is off or running on a low duty cycle.
+
+\section{On-site hardware} \label{sec-onsite-hw}
+
+\todo[inline]{CFE: this whole section should probably be rewritten to reflect the plans to a) install all computing at one site b) not use FIR filters, etc...}
+
+Figure~\ref{fig:central} gives the schematic representation of the data flow within a RX (or receiving on the TX) site from the antenna sub-array first beam former to the local site storage.
+
+\subsection{First Stage Receive Unit rates}
+\label{ssec:bfrates}
+
+A general description of the {\bf F}irst {\bf S}tage {\bf R}eceiving {\bf U}nit (FSRU) units can be found in~\cite{fsru-tender}. 
+Development has started and the final design was ready in February 2019. 
+There will be one FSRU per \ED sub-array that receives 182~analog channels from 91~antennas. 
+After analog-to-digital conversion, signals are delayed and combined (beam formed) on the Field Programmable Gate Array (FPGA) to form 10~wide angle beams having two polarizations each.
+The FPGA also performs the time delay for the first step of the second beam former that will form the narrow angle beams as described in Section~\ref{ssec:sbf}.
+The wide angle beam data are transferred as UDP packets from each \fsru via two 25~Gb/s optical links to a cluster computer that handles ring buffers, second stage beamforming and file writing.
+\begin{figure}
+\centering
+\includegraphics[width=0.7\textwidth]{E3D_dataflow_1aa.png}
+\caption{Schematic of the on-site data flow from the sub-arrays to site storage.
+\label{fig:central}
+}
+\end{figure}
+
+The FSRU
+% {\bf F}irst {\bf S}tage {\bf R}eceiving {\bf U}nit (FSRU)
+(FSRU$_s$ where $s=1,N$) attached to each of the $N$ site~\footnote{There are $N=109$ sub-arrays on the RX sites and $N=119$ sub-arrays on the TX site.} sub-arrays are shown at the top of Figure~\ref{fig:central}. 
+Each FSRU outputs 10~wide-angle beams that are transmitted as UDP data packets 
+(b${_s} {^n} {_p}$) where $s=1,N$ is the sub-array number, $n=1,10$ is the wide-angle beam number and $p=1,2$ is the polarizations of the beam.
+The FSRUs are either directly connected to the computing nodes that contain the RAM \RB{}, or there is a switch that directs the UDP packets to the appropriate nodes.
+The UDP packets are written to the \RB ordered by beam number and polarization with all sub-array packets as a sequence
+\{b${_1} {^1} {_a}$ ,... , b${_{109}} {^1} {_a}$\},
+\{b${_1} {^1} {_b}$ ,... , b${_{109}} {^1} {_b}$\},
+\{b${_1} {^2} {_a}$ ,... , b${_{109}} {^2} {_a}$\},\,\ldots{}\,, etc of $2180\,(109 \times 10 \times 2)$  wide-angle beam data packets.
+\begin{figure}
+\centering
+\includegraphics[width=0.8\textwidth]{E3D_dataflow_3aa.png}
+\caption{Overview of the site computing hardware including control and analysis hardware. The various site clusters are connected by high-speed network e.g. Infiniband. \label{fig:sitecluster}}
+\end{figure}
+The UDP data packets sent from the FSRUs are buffered and then sent via the two 25~Gb/s optical links once a UDP packet has been completely written.
+
+\iffalse
+\subsubsection{Skibotn site:}
+\label{sssec:rates:skib}
+
+Table~\ref{tab:skib:rates} gives the total data rate from all sub-array first beam-formers at the Skibotn TX site.
+For the \NBW{} ``continuous" operation there will be~2 beams per FSRU, 
+each FSRU will transmit 0.6~Gb/s.
+The the total data rate from all sub-arrays to the ring buffer in \NBW{} bandwidth will be~76~Gb/s.
+
+For the \WBW{} bandwidth mode, anticipated to run only in a ``burst" mode, there are 1~or~2~beams per~FSRU over all the 119~sub-arrays as, by definition, the radar TX and RX directions are along the same line of site at the TX station.
+As the \NBW{} and \WBW{} bandwidths are operated simultaneously, the  total data rate is summed to produce 0.54~Tb/s.
+\begin{table}[h]
+\centering
+\begin{tabular}{rcrlr|r}
+{Band-} & {Beams} & {Bits $\times$}    & Rate    & Sub- & {Total rate} \\
+{width} & {/FSRU} & {Polarities} & {/FSRU} & arrays & \\ \hline
+% \NBW{} & 10 & (16+16)$\times$2 & 3.2 Gb/s & 119 & 0.38~Tb/s \\
+% \WBW{} & 1 & (16+16)$\times$2 & 1.9 Gb/s & 109 & 0.21~Tb/s \\
+% \WBW{} & 2 & (16+16)$\times$2 & 3.8 Gb/s & 109 & 0.42~Tb/s \\
+% \WBW{} & 10 & (16+16)$\times$2 & 19.2 Gb/s & 10 & 0.19~Tb/s
+\NBW{} & 2 & (16+16)$\times$2 & 0.6 Gb/s & 119 & 0.08~Tb/s \\
+\WBW{} & 2 & (16+16)$\times$2 & 3.8 Gb/s & 119 & 0.46~Tb/s \\
+\end{tabular}
+\caption{Total data rates expected at the Skibotn TX site. \label{tab:skib:rates}}
+\end{table}
+
+\subsubsection{Receive sites}
+\label{sssec:rates:rx}
+
+Table~\ref{tab:rx:rates} gives the total data rate from all sub-array first beam-formers at the receive sites.
+For \NBW{} bandwidth ``continuous" operation there are~10 beams per FSRU, each FSRU will transmit 3.2~Gb/s for a total rate to the ring buffer of 0.35~Tb/s (350~Gb/s to be compared to 76 Gb/s on the TX site).
+For the \WBW{} bandwidth mode, anticipated to run only in a ``burst" mode, 
+2~beams will be used per sub-array.
+In the \WBW{} bandwidth case, the \WBW{} and \NBW{} rates are summed for a total of 0.76~Tb/s of UDP stream data sent to the ring buffer.
+\begin{table}[h]
+\centering
+\begin{tabular}{rcrll|r}
+{Band-} & {Beams} & {Bits $\times$}    & Rate    & Sub- & {Total rate} \\
+{width} & {/FSRU} & {Polarities}       & {/FSRU} & arrays & \\ \hline
+\NBW{}  & 10 & (16+16)$\times$2 & 3.2~Gb/s & 109 & 0.35~Tb/s \\
+% \WBW{} & 10 & (16+16)$\times$2 & 19.2 Gb/s & 109 & 2.1~Tb/s \\
+\WBW{} & 2 & (16+16)$\times$2 & 3.84~Gb/s & 109 & 0.41~Tb/s \\
+\end{tabular}
+\caption{Total data rates expected at the receive sites. \label{tab:rx:rates}}
+\end{table}
+%% 2 beams for 30 MHz for first five years.
+\fi
+
+\subsection{Input network from FSRU}
+\label{sec:inputnet}
+
+The input network delivers the narrow angle beam UDP streams from the two~25~Gb/s interfaces per \fsru (109 or 119 depending on site) through fiber optic links from each \fsru to the server nodes that contain the RAM \RB. 
+These computing nodes that comprise the RAM ring buffer are the same nodes that perform the final steps of the second level beam forming: the 
+{{\bf R}ing {\bf B}uffer {\bf B}eam {\bf F}ormer} (RBBF) nodes.
+There is a choice between connecting the \fsru links directly to the RBBF nodes as shown in Figure~\ref{fig:inputnet-direct} or have a switching fabric in between, as shown in Figure~\ref{fig:network-layer}.
+\begin{figure}
+\centering
+\includegraphics[width=0.4\textwidth]{input_network_7.png}
+\caption{Input network that assumes 2x25~Gb/s optical connections from each FSRU directly connected to the second beam former nodes.
+\label{fig:inputnet-direct}
+}
+\end{figure}
+
+%%% CFE: this is a strange sentence. a) is the loss of resolution worse with a switch fabric? b) syntax of the sentence
+\subsubsection{Direct Connection}  \label{ssec:direct}
+The advantages of a direct connection of the \fsru links is that the loss of a single RBBF node out of ``m'' nodes will only result in a fractional loss of $1/m$ of the inputs, which results in lower resolution but still judged to be usable data for $m \geq 10$. 
+It also puts constraints on the ``m" RBBF nodes since each must provide $238/n$ 25~Gb/s interfaces, in addition to an internal communications fabric between the nodes and a normal interface for exporting data products and system management. 
+A quick market survey has put the upper limit on the number of useful 25~Gb/s interfaces per 2U server at 12 or 13.
+
+\subsubsection{Switched Connection}
+A switching fabric (shown in Figure~\ref{fig:network-layer}) converts the many (two each per FSRU) 25~Gb/s connections to fewer 100~Gb/s connections (for example).
+This networking solution allows flexible fail-over through the ability to switch any \fsru to any RRBF node, which is helpful from a reliability point of view, as we can assume that server nodes will need scheduled maintenance or will have unscheduled failures.
+Recovery from this situation in a fully switched network situation with at least one spare (m+1) RBBF node can be done in milliseconds, compared to hours (or days) if someone has to travel to a remote site. 
+Having a unique destination IP and unique port for each first level beam is also convenient for the software solution.
+
+Switching also means that the RBBF nodes only need one or two 100~Gb/s interface per node for the incoming data, and thus more compact servers are possible.
+The downside is the extra cost for switches that become a point of failure that can degrade the signal from a a site.
+
+Each socket (containing multiple cores) of the CPU on a RBBF node will process the data of one polarity ($p$) of a wide-angle beam ($n$) from each \fsru ($p$) over the whole array.
+For example, the ring buffer memory of the  RBBF node 1 would receive UDP packets:
+\[
+\Sigma^{N}_{s=1} \Sigma^{2}_{p=1} {\rm b} {_s} {^1} {_p}
+\]
+and CPU core 1 would process data:
+\[
+\Sigma^{N}_{s=1} {\rm b} {_s} {^1} {_1}
+\]
+of beam 1 from FSRU $s$, polarity $p$.
+Therefore, the UDP data packets of each beam and polarity from each \fsru must be correctly routed to the portion of the ring buffer situated on each RBBF node.
+
+\begin{figure}[ht]
+\centering
+% \includegraphics[width=0.9\textwidth]{E3D_inputnetwork.png}
+\includegraphics[width=0.4\textwidth]{input_network_8.png}
+\caption{Input network candidate that assumes 2x25~Gb/s optical connections from each FSRU to a layer 3 switching infrastructure. A earlier option uses a single 100~Gb/s optical connection to the switching infrastructure. \label{fig:network-layer}
+}
+\end{figure}
+
+
+%CFE: commented out repeated discussion
+% and also allows fast and flexible fail-over, where any node can take any beam.
+
+%However, a switch is not needed to build the cluster and it will be a single point of failure which can stop all data streams at one site. 
+%The number of cluster nodes will be big and one node, in case of failure, will have only small effect on the signal amplitude and resolution.
+
+\subsection{Ring Buffer}
+\label{ssec:ring-buffer}
+
+The \RB is a pool of fast-access storage (e.g. DRAM, Flash, Phase-Change memory, etc) that is integral to the RBBF nodes. 
+The narrow-beam data packets (b${_s} {^n} {_p}$) from the FSRUs are written to the \RB memory.
+The \RB size is based on the baseline \NBW{} bandwidth operation and is sized for 
+the time that level-1b data can be written to the storage to be processed off-line or written to the disk buffer. 
+
+The minimum \RB should allow 100~s of \NBW{} bandwidth data to be stored, e.g. in order to search for meteors and space debris in the raw data.
+An upper limit on the \RB capacity is to store 1200~s of \WBW{} data, which is required to cover a typical scientific rocket launch with F-region (around 250~km) apogee and calculate posterior beams along the trajectory (Nickolay Ivchenko, KTH, Stockholm, private communication). 
+\iffalse
+If trajectory data could be obtained in near real time (few minutes), this requirement would be relaxed accordingly as the desired beams could then also be formed with a delay on the order of some minutes. 
+The following tables give the calculations for the \RB based on an assumption that the \RB must accommodate a minimum of 100~s of real-time \NBW{} level-1a data and up to the maximum of 1200~s.
+% Discussion with Nickolay at Eiscat HQ on 5 December. Will ask ESRANGE about the possibility to obtain trajectory coordinates in near real time.
+% Rocket trajectories are usually (re)calculated after the flights based on radar or GPS tracking. If so dump data to the SSDs during the flight.
+\fi
+A more detailed description of the ring buffer size calculations can be found in~\cite{e3dds-do1}.
+For the RX sites the ring buffer size ranges between $\approx 4 - 50$~TB and for the TX sites between $\approx 1 - 11$~TB.
+
+If the ring buffer is to deployed as RAM on the RBBF nodes, the RAM sockets must all be populated evenly for the best overall data throughput on the node.
+Given the useful size ranges of the ring buffer and volatile RAM prices, the optimum ring buffer/cost solution will only be apparent close to the time the RBBF cluster servers are purchased.
+ 
+% \subsubsection{Skibotn site}
+% \label{sssec:rb:skib}
+\iffalse
+The ring buffer calculations for the Skibotn transmitting and receiving site are shown in Table~\ref{tab:skib:rb}.
+These calculations assume that in the \NBW\ mode, the site produces only 2~wide-angle beams (along the current and preceding transmission beams).
+In the \WBW{} mode, there are additionally 2~beams.
+\begin{table}[h]
+\centering\begin{tabular}{lrrr|rr|rr}
+{Bandwidth} & {Beams/} & {Bits $\times$}    & {Total rate} & Buffer & Buffer & Buffer  \\
+            & {FSRU}   & {Polarity$\times$} & (Tb/s)          & \NBW   & size  & \WBW \\
+            &          & {Subarrays}        &              & (s) & (TB) & (s) \\ \hline
+\NBW{} & 2 & (16+16) & 0.08 &   & \\
+      &    &  $\times$2         &                         %  & 100~s   & 0.95~TB   & 14~s  \\
+ & 100   & 1.0 & 15  \\
+      &    &  $\times$119                           &      & 400   & 3.8    & 56  \\
+ \WBW{}    &  2  &      & 0.46 & 1200  & 11.4 & 169 
+\end{tabular}
+\caption{Ring buffer calculations and buffer time for \WBW{} bandwidth operation at Skibotn. 
+The buffer time for the \WBW{} operations is based on the assumption that there are simultaneously 2~beams each of \NBW\ and \WBW. \label{tab:skib:rb}}
+\end{table}
+
+% \subsubsection{Receive sites}
+% \label{sssec:rb:rx}
+The buffer calculations for the receiving sites are shown in Table~\ref{tab:rx:rbv2}.
+These calculations assume that in the \NBW\ mode, the sites produce 10~wide-angle beams.
+In the \WBW{} mode, the sites produce 8-wide-angle beams at \NBW\ and 2~wide-angle beams at \WBW.
+\iffalse
+\begin{table}[h]
+\centering\begin{tabular}{lrrr|rr|rr}
+{Bandwidth} & {Beams/} & {Bits $\times$}    & {Total rate} & Buffer & Buffer & Buffer \\
+            & {FSRU}   & {Polarity$\times$} &   (Tb/s)           & time   & size  & time \\
+            &          & {Subarrays}        &              & (\NBW{}) &  (TB) & (\WBW{}) \\ \hline
+\NBW{}       & 10       & (16+16)            & 0.35 &   & \\
+      &    &  $\times$2         &                          & 100~s   & 4.4  & 51~s  \\
+      &    &  $\times$109                           &      & 400~s   & 17.5  & 203~s  \\
+ \WBW{} &  2  &    & 0.41 & 1200~s  & 52.5  &  609~s
+\end{tabular}
+\caption{Ring buffer calculations and buffer time for \WBW{} bandwidth operation at the RX sites. 
+The buffer time for the \WBW{} operations is based on the assumption that there are simultaneously 8~beams at \NBW\ and 2~beams at \WBW. \label{tab:rx:rbv2}}
+\end{table}
+\fi
+\begin{table}[h]
+\centering\begin{tabular}{lrrr|rr|rr}
+{Bandwidth} & {Beams/} & {Bits $\times$}    & {Total rate} & Buffer & Buffer & Buffer \\
+            & {FSRU}   & {Polarity$\times$} &   (Tb/s)   & \NBW   & size  & \WBW \\
+            &          & {Subarrays}        &              & (s) &  (TB) & (s) \\ \hline
+\NBW{}       & 10       & (16+16)           & 0.35 &                               & \\
+      &    &  $\times$2         &                          & 100   & 4.4  & 51  \\
+      &    &  $\times$109                           &      & 400  & 17.5  & 203  \\
+ \WBW{} &  2  &                             & 0.41         & 1200  & 52.5  &  609
+\end{tabular}
+\caption{Ring buffer calculations and buffer time for \WBW{} bandwidth operation at the RX sites. 
+The buffer time for the \WBW{} operations is based on the assumption that there are simultaneously 8~beams at \NBW\ and 2~beams at \WBW. \label{tab:rx:rbv2}}
+\end{table}
+
+As can be seen in Tables~\ref{tab:skib:rb} and~\ref{tab:rx:rbv2}, the time that data can be written into the \RB when the \WBW\ mode is in operation is roughly an order of magnitude less time at the Skibotn site and half the time at the receive sites.
+This is due to the time requirements (min 100~s and max 1200~s) for the \RB in the \NBW\ mode. 
+A consequence is that the size (physical) of the \RB on the Skibotn and receive sites will be different.
+\fi
+
+The \WBW{} bandwidth is mainly for astronomy and plasma line search (including NEIALs~\footnote{Naturally Enhanced Ion-Acoustic Lines, an asymmetry in the scatter spectrum.} with plasma lines). 
+The system will be switched to the high \WBW\ rate when NEIALs are detected, and in this case run the FSRUS at \WBW{} for an interval up to about an hour, overwriting the ring buffer in 10~s intervals and storing those with detected NEIALS to disk for offline interferometry.
+%% I change this paragraph based on the sentence above...
+The time to write level~1 (a or b) data from the \RB memory to the disk buffer must be considered also. 
+Writing the level~1a data out to a spinning hard disk buffer will be at least one order of magnitude slower than receiving it from the FSRUs (depending on the storage bandwidth capacity of the site local buffer). % During this time, new data taking at \WBW{} is not possible until the ring buffer has sufficient free space, and if the entire ring buffer is used for \WBW{} data, \NBW{} operation will also need to be paused.
+
+An option for writing level~1a data in burst mode is to use local Solid State Drives (SSDs) i.e. SSDs installed in the RBBF nodes. 
+SSDs that can handle up to 2-3 Drive Writes Per Day cost much less than RAM, probably adding only 5-10 percent to the \RB costs. 
+This means the \WBW{} data could be flushed from the \RB in only 2-4 times as long as it took to receive from the source and enable rapid resumption of \NBW{} operations. 
+This is under the assumption that \WBW{} burst mode with raw data dumping would not occur more than 2-3 times per day on a long term average. 
+% how about 10-s bursts with post-beam forming on ringbuffer data during following low duty cycle mode?
+
+\subsection{Second level beam former} \label{ssec:sbf}
+
+The E3DDS deliverable 1~\cite{e3dds-do1} describes the software options for the \SBF that produces 10 narrow-angle beams from each wide angle beam~\footnote{10 wide-angle beams with 2 polarities gives 200 narrow angle beams in total}. 
+A \SBF process with correct delay and decimation values is implemented when an experiment is formed. 
+
+The current solution for the \SBF is a two stage process that makes use of the FPGAs on the FSRUs to perform the long delays needed between sub-arrays, essentially shifting the start time of each beam.
+The summation of the results and a small phase change \emph{i.e.} complex multiplication can then be performed in the RBBF nodes.
+In Section 8.4 of~\cite{e3dds-do2}, simulations show that the simulated maximum error using this approach can be considered to be small enough.Also
+
+By splitting the \SBF tasks between the \fsru FPGA (time delays) and RBBF nodes (summation and phase change), it is expected that one socket of an RBBF node~\cite{amd-epyc} can produce the 10 narrow angle beams from each wide angle beam.
+Given that in \NBW\ operation: the RX sites will generate 20 wide-angle beams (10 beams with 2 polarities); the TX site will generate 4 wide-angle beams.
+Therefore for each RX (TX) site, 10 (2) of such servers are required to process the \NBW\ data in real-time.
+
+Also, there is no need to perform summations of outputs between the RBBF nodes and this negates the need to employ a message passing interface~\cite{mpi} and a high performance network for online data processing to connect the RBBF nodes on the data downstream side.
+
+% The \SBF process is executed by the RBBF nodes when enough data have been received. 
+% Data stream index and location of the data are given as parameters. 
+% The \SBF process copies samples to 10 different data flows and runs a FIR filter algorithm through the data. 
+% The result is 10 different narrow angle beams. 
+
+\subsection{Propositions for hardware configuration}
+\label{ssec:prop-hw}
+
+The data throughput values in different operating modes have to be considered when deciding the Ring Buffer hardware configuration.
+% Ring Buffer node hardware configurations has to be done looking data throughput values in different operating modes. 
+% The first consideration is how many 25 GbE optical lines can be connected to one ring buffer node. 
+In the Fast Saving mode (at \WBW) all the FSRUs are sending data packets at a rate of 52~MSPS. 
+This data stream should be written to the ring buffer in the RAM main memory. 
+
+The latest AMD EPYC 7000 processors have memory bandwidth in order of 170 GB/s (1360 Gbit/s).
+If all that can be used for data throughput, it means that the nominal data from FSRUs can be saved. 
+So memory bandwidth should not be a bottleneck~\footnote{The next version of the AMD CPU is expected to provide PCIe Generation 4 (PCIe4) as well as even better memory bandwidth, see {\url{https://www.servethehome.com/why-amd-epyc-rome-2p-will-have-128-160-pcie-gen4-lanes-and-a-bonus/}}}.  
+%% One PCIe Gen3 x16 connection can handle approximately 100~Gbit/s traffic. 
+In the case of AMD EPYC 7000 series there 128 lines available giving
+800~Gb/s of traffic in theory.
+%% and about 48 FSRU full speed connections.
+In practice, from Figure~\ref{fig:network-layer}, the FSRUs are connected to the RBBF nodes through a network layer.
+Each RBBF node can accommodate two PCIe4 network cards each with two 100~Gb/s connections.
+%% We can consider to connect 12 FSRUs to each Ring Buffer node using three PCIe cards having four times 25 GbE connections each. 
+%% This will be 66~Gb/s data stream in one PCIe x16 and about half of available bandwidth. 
+The traffic to the main memory is then 200~Gb/s, which is only 1/6 of full available bandwidth.  
+
+%% For the Fast Saving mode we need preferably latest Non-Volatile Memory Express (NVMe) M.2 SSD disks installed directly to the server board. 
+%% For example the Samsung EVO Pro SSD has a sequential write speed over 3~GB/s (24~Gb/s) and thus can handle the nominal 6.5 MSPS (2~Gb/s) traffic from 12 FSRUs. 
+%% Is this number above correct? Surely 6.5 MSPS x (16+16) bits x 2 pol = 416 Mb/s per FSRU. 12 FSRUs give 5 Gb/s ?
+%% It's only one polarization. At this stage HW is divided to two parts and polarizations are combined only before lag-profile calculations.
+%% The HighPoint SSD7120 SSD device is a PCIe x16 card which can be equipped with four M.2 SSDs in RAID 0 mode. This gives write speed of 12~Gbit/s (100~Gb/s) and in theory can handle traffic from 12~FSRUs having 17~MSPS decimated output rate.
+\begin{figure}[h!]
+\includegraphics[scale=0.3]{E3DDS_D2_ring_buffer_node_dataflows.png}
+\caption{An example of a possible hardware configuration using FPGA
+accelerators for second beam forming.}
+\end{figure}
+%% \includegraphics[scale=0.3]{E3DDS_D2_sbf_fpga.png}
+
+FPGA or GPU cards can be used as an optional accelerator for prompt computing or correlators for imaging experiments. 
+Accelerator cards should be connected together using fast network or direct card to card (e.g. NVLink) connections.
+
+%%\subsection{Second beam former rates}
+%%\label{ssec-sbf-rates}
+%% Removed this whole section... irrelevant now and nothing new.
+\iffalse
+The {\bf S}econd {\bf B}eam {\bf F}ormer (SBF) consists of 
+{\bf F}inite {\bf I}mpulse {\bf R}esponse (FIR) filters running on the \fsru FPGAs and a phase change (complex multiplication) and summation performed on the RBBF nodes.
+The output of the \sbf is 10~narrow angle beams per wide-angle beam polarity, with a design possible to scale to 100~narrow angle beams ($m$) per polarity ($a$). 
+%% Each output beam uses data from one wide angle beam on each \fsru so that each narrow angle beam, $B^2_a$, is a summation of data from FIR filters acting on $b^2_{1~a} \ldots b^2_{109~a}$ 
+%%% CFE: What does superscript 2 mean? Polarisation channel or level?
+\begin{figure}[!h]
+\centering
+\includegraphics[width=\textwidth]{E3D_dataflow_2aa.png}
+\caption{The creation of 10 narrow angle beams (in polarity ``a") through FIRs and summation, showing how each output beam needs input from one beam from each subarray~\label{fig:beams}}
+\end{figure}
+
+%% FIXME: Proper reference to Assar's stuff, or copy and paste a bunch?
+% CFE: not necessary to repeat
+% The beam forming, at the RX sites, that produces 10 narrow angle beams per polarity from each wide angle beam requires 
+
+%% Each second beam former FIR filtering operations handles one beam from each sub-array for a total of 21800 filtering operations.
+The outputs of the filter operations are summed to produce up to 200 narrow-angle ($0.6^{\circ}$ wide) beams~\footnote{The full \ED design specification will produce 100~narrow angle beams per polarization for a total of 200.}  (B${^m}{_p}$ where $m=1,10$ and $p=a,b$) 
+% Are we sure this is an UDP stream, for the high-bandwidth case we talked earlier about
+% these being transferred as MPI collective operations or other approaches?
+transmitted to file writers.
+The summed beams are written as files (one beam per file) to the local site storage.
+The beamforming thus requires $109\times 2\times 10\times 10=21800$ FIR filters in total. 
+From the note at~\cite{assars-note} this implies a processing power of 13380~GFLOPS to process \NBW\ data in real time. 
+% JW. Fixed the line above.
+% CFE removed unnecessary repetitions below
+Benchmarks from~\cite{assars-note} has put the performance of modern CPUs at roughly up to 600~GFLOPS per dual CPU node. 
+% This leads to a a need for 35-40 nodes at the RX sites in order to beam-form the \NBW\ data in real time.
+This leads to a minimum requirement of some 40 2U servers in the\SBF at the RX sites.
+The number of SBF nodes required for the CPU part of the beam forming is expected to change downwards as the optimization and testing of the beam forming code proceeds.
+At the TX (Skibotn) site, the number of input wide angle beams at \NBW\ is 2 vs 10 which implies a reduction in the required computing capacity by a factor of 5, giving 8 2U nodes.
+
+After the FIR filters the data have to be summed, which aggregates to a large data rate. 
+For a naive implementation of just sending all the data for each narrow angle beam to a destination node for summation, a 200~Gb/s network fabric would be needed for the summation alone. 
+By summing the values from more than 15 wide angle beams within each node, a 100~Gb/s network will be adequate.
+
+Currently, as explained in~\cite{assars-note} (Section 2.3.1), the summation of the beams within the test servers of the SBF nodes encounters a memory bottleneck that lowers the overall processing speed.
+Using the benchmark for the summation within the SBF nodes would imply that the number of SBF nodes would need to increase.
+An current estimate from~\cite{assars-note} increases the number of 2U nodes by a factor of 1.5.
+
+A high-performance interconnect such as Infiniband~\cite{infiniband} or Omni-Path~\cite{omnipath} with a focus on parallel computation and low overhead RDMA is suggested to leave as much CPU power as possible in the SBF nodes for the necessary calculations. 
+For Infiniband there is also the intriguing possibility of using functionality in the network switch to do the summation inside the switch instead of in the nodes. 
+An important design point for this network component is that single switches have 36, 40, or possibly 80 ports. 
+But since the cross-node summation only needs to happen within one polarization, splitting the nodes over two switches is fine and more than 72 nodes in total should hopefully not be needed.
+\fi
+
+\subsection{On-site local disk buffer}
+\label{ssec:disk-buffer}
+After the narrow angle beams are summed in the \RB nodes, the data streams need to be ordered into files and then shipped off site to a data center for permanent storage. 
+In order to handle short interruptions and the occasional inefficient scheduling, a local buffer of at least a few minutes and preferably a few hours is needed.
+
+The total output of the second level beam former is $32+32$ bits $\times$ 200 beams $\times$ 5~MHz = 8 GB/s 
+at \NBW{} operations. 
+%%%! Tjulin: I get confused easily. Wasn't it 10 narrow beams (2 polarisations) in the previous section?
+% JW: Corrected 10 n-a beams per w-a beam
+As mentioned in Section~\ref{ssec:ring-buffer} the \RB (or SBF) nodes can be equipped with SSDs.
+For example, six 400 GB SSDs in a raid~5 configuration provide 2~TB net usable buffer space, which turns into 250 seconds or $n\times 6$ minutes of effective buffer space in the \NBW{} case, and a sixth of that for \WBW{} (\WBW{} will (can)not be beam formed in real time on the available compute resources though). 
+This would also be a fast (2--4~GB/s on each node) target for saving sections of the \RB, where speed of writing is important to free up that part of the \RB for new data.
+
+Using Non-Volatile Memory express (NVMe) for these SSDs might add a bit of cost (list prices are 1.2 times more expensive) but indications are that in a competitive tender the difference is not so big.
+Also NVMe reduces CPU usage for I/O and increases total speed.
+
+\subsection{File writer and prompt computing}
+\label{ssec-fw-prompt}
+
+The \FW process will take the summed narrow-angle beam results from the \SBF and write these to data files
+(HDF5-based format suggested) on storage. 
+%%% CFE: following sentences have strange syntax.
+%%% JW: Check this section?
+The \FW processes either run on RBBF nodes or on separate dedicated nodes, downstream of the \SBF. 
+Dedicated nodes can also be used for summing, decimation, data analyzing and event triggering. 
+servers
+
+It is preferred that the HDF5 files will be written to the local SSD buffer on the RBBF nodes then transferred to a central location. 
+This local storage should be fast so that exceptional events can be downloaded quickly from the RBBF nodes, so SSD disks are preferred.
+The requirements for the \FW processes can be specified by the operating bandwidth (\NBW\ or \WBW) and the level of data reduction within the \SBF. 
+For example, one narrow angle beam, having \NBW\ bandwidth and two polarizations, is a continuous data stream of 80 MB/s, which is considered very small for any modern SSD disk with write speeds up to 3000 MB/s.  
+
+The overhead in writing the data to HDF5 files will be negligible as all the experiment-related information is stored in the experiment database and can be added to the HDF5 file later. 
+The instructions for the file size, file names and destination folders are in the experiment database written when experiment has been formed. 
+This database also includes the necessary metadata information which will be added to the files.
+
+\subsection{Additional servers for services}
+\label{ssec:additional}
+
+Operations of the experiment and maintenance tasks for the computing requires a highly available database as well as several servers to handle orchestration, software maintenance tasks, file transfer scheduling, etc. %%%! Tjulin: What is a highly available database? What does orchestration mean here?
+A system to run highly available databases and virtual machines could echo the one used by the NeIC NT1, and need three physical hosts with local storage.
+
+For maximum commonality, three more nodes with the same specification of the SBF nodes would be appropriate.
+As a compromise to reduce the cost, they could be ordered with significantly less RAM (200--300~GB) and only 2 or 4 network interfaces.
+%%%! Tjulin: Suggestion "As a compromise to reduce the costs, they could be ordered..."
+% JW: changed.
+%%%! Tjulin: It feels as this section needs some polishing.
+% JW: Agreed... but this subject is almost completely up in % the air still. There's no prototype to even guess the % requirements on hardware. Could put a comment in the conclusions?
+
+
+\section{On-site software}
+\label{sec-onsite-sw}
+%%%! Tjulin: The language in this full section seems a bit "Finnish". I think a number of minor edits is needed (add some "the", "a", ...)
+% JW: edited HH: Thanks :)
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=\textwidth]{E3D_dataflow_g_4.png}
+\caption{A schematic view of the different software components of the \SBF.}\label{fig:bf2node}
+\end{figure}
+
+\subsection{Receiver and \RB process}
+
+A suggested design is to run a process (the \RB process) for each first level wide-angle beam, that listens to a dedicated port and puts all the received data into a \RB in the shared memory of the server node. 
+The process reads the data stream index number from the data packet header and updates the \RB database table so that received data can be associated with corresponding data stream.
+
+Once a predefined number of data packets from all \SA{}s have been written to the \RB, the process triggers the \SBF FIR filter process dedicated to this first level beam.
+
+The \RB keeps the data so that in case post-analyzer process finds an interesting event, the corresponding data can be marked as protected and to be downloaded separately. 
+This will be done in a database table. 
+These \RB areas will not be used for new data until they are released by higher level control (i.e. after the data is downloaded to the local buffer).
+
+
+% Early simulations show that one node cannot handle the data rate of all calculated data stream from all \SA{}s, which means that a hierarchical beam forming process will be used. 
+
+% Is suggested to be implemented as an MPI~\cite{mpi} program per second level beam produced, that launches on all \RB nodes and one chosen \FW node. 
+% It would, on each \RB node, continuously read data from the node-local \RB arrays, apply FIR filters on each sample, and then through an MPI\_reduce call do a sum of all the subarray input beams with a target on the \FW node. 
+% This can also be accelerated by offloading the MPI\_reduce into the switch, as mentioned in Section~\ref{ssec-sbf-rates}.
+
+% * <assar.westman@eiscat.se> 2018-10-21T07:29:40.546Z:
+% 
+% Is this paragraph starting with "If a simplified.." needed?
+% 
+% ^ <harri.hellgren@gmail.com> 2018-10-21T14:16:33.312Z:
+% 
+% No is not. 
+%
+% ^.
+
+\subsection{Timing and control network}
+\label{sec:control}
+%CFE: this has developed
+% CFE : commented outdated text
+%The \ED radar transmissions and receive sites will be %controlled by the EROS~\cite{eros} software, used by the %current EISCAT radars, re-written for the \ED case.
+%This will be defined in a future document ``\ED Software %Requirement Control Document" that is in preparation.
+
+The subsystems of \ED must be synchronised at an accuracy of picoseconds, corresponding to acceptable geometric errors in the beamforming. For this the \WR timing protocol 
+% CFE: @Harri best reference?
+will be used. It requires a separate 1 Gb/s control network that has to be distributed over single-mode fibre connections via certified \WR switches.
+
+%% CFE: control and WR network same or separate?
+%% SW group should add text and references
+The radar control system will distribute commands to the PSCUs, FSRUs and transmitter controllers. 
+It is being built around RabbitMQ messaging (an Erlang implementation not to be confused with \WR) a distributed database and programmed using high level libraries developed for Python or compiled languages like Rust where appropriate. 
+%% CFE: nice that Erlang is used at least indirectly here. We found some traces of Joe Armstrong when we cleaned the Kiruna receiver site!
+
+% Isolated programs can work asynchronously and old EROS % programs can be added to the cluster easier.  
+%The hardware required for the EROS control on each site is not %expected to be significant.
+%The computer running EROS must be connected to the 1~Gb/s %control network within the site, which also handles timing %signals using the \WR synchronization protocol.
+%This network connects EROS mainly to the Pulse and Steering %Control Units (PSCU) and FSRUs located in the Sub-Array %Containers under the antenna array. %CFE what does "mainly" %mean?
+
+\iffalse
+\newpage
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=\textwidth]{E3D_dataflow_g_2.png}
+\caption{fig 5: A caption for the figure}\label{fig:fsru}
+\end{figure}
+\fi
+
+\newpage
+\bibliography{main}{}
+\bibliographystyle{unsrt}
+
+%%%! Tjulin: I corrected the FSRU link in the bib-file.
+%%%! Tjulin: In principle, the EROS report link could also be changed into the "official EISCAT" file repository, if it wasn't for the fact that the actual link then would be: https://www.eiscat.se/eiscloud/index.php/s/XH2Y3mQeXat5wdW/download?path=%2FEISCAT_3D%20design%20study%2FWP7%3A%20Distributed%20control%20and%20monitoring&files=EISCAT_3D%20radar%20control%20and%20monitoring%20subsystem%20(March%202009).pdf
+
+\newpage
+%\appendix{\large \bf Appendix: Cost estimate}
+
+%%%! Tjulin: Took the liberty to make the appendices included in a more latex-like fashion
+% JW: Thanks! Always willing to learn a new latex thing!
+
+
+\begin{appendices}
+\section{Cost estimate}
+
+A cost estimate is shown here based on the text above. 
+The costs are based on list prices~\cite{fs-prices} and are made for comparison purposes.
+A tender in which sufficient~\footnote{The amount of equipment purchases that trigger discounts varies by supplier and market conditions.} amounts of equipment is being purchased can result in a 30\% reduction in list prices.
+Given this observation, standardizing the hardware between the sites and buying under a single tender is the strategy that will deliver the most hardware for money.
+%%%! Tjulin: Should define "sufficient" or clean the footnote
+% JW: Added more disclaimers.
+We assume that the number (and therefore the price) of optical cables and connectors from the FSRUs to the input network and site-local computing (i.e. second beam former) is a constant for all options. 
+%%%! Tjulin: What is constant? Price?
+% JW number and price.
+The output network (Infiniband or other technology after the SBF nodes) is also assumed to be constant, modulo the actual number of SBF nodes.
+The cost for a 40-port 200 Gb/s Infiniband switch is 20~k\euro.
+Infiniband switches are available with 36, 40, or possibly 80 ports. 
+
+The network switching equipment (between the FSRUs and SBF nodes) has the following prices:
+\iffalse
+\begin{center}
+\begin{tabular}{llc}
+{25~\gps}&{100~\gps}   &{Price} \\
+{ports} & {ports} & {(k\euro)} \\ \hline
+48 & 12 & 30 \\
+48 & 6 & 20 \\
+48 & 4 & 20 \\ 
+0  & 32 & 30 \\
+0  & 64 & 80
+\end{tabular}
+\end{center}
+\fi
+\begin{center}
+\begin{tabular}{llcr}
+{25~\gps}&{100~\gps}   &{Price} & {Form}\\
+{ports} & {ports} & {(k\euro)} & \\ \hline
+48 & 12 & 30 & 1U\\
+48 & 6 & 20 & 1U\\
+48 & 4 & 20 & 1U \\ 
+0  & 32 & 30 &  1U \\
+0  & 64 & 80 & 1U
+\end{tabular}
+\end{center}
+
+The server costs are based on servers in the Kebnekaise cluster at HPC2N in Ume\r{a}
+(dual CPU, 2.6~GHz, 14 cores) and 384, 768 or 1532 GB RAM (24$\times$16~GB, 32~GB, 64~GB respectively)\footnote{For performance
+all memory channels should have the same population}.
+This spec includes 2~TB net SSD on raid-5, enough 25~GbE ports, 100~GbE NIC as a stand-in for Infiniband.
+This is the same specification of server as used in the benchmarking in~\cite{assars-note}.
+\iffalse
+\begin{center}
+\begin{tabular}{lc}
+{RAM} & {Price} \\
+{(TB)} & {(k\euro)} \\ \hline
+0.4 & 17 \\
+0.8 & 24 \\
+1.5 & 40 \\
+\end{tabular}
+\end{center}
+\fi
+\begin{center}
+\begin{tabular}{lcr}
+{RAM} & {Price}  & {Form}\\
+{(TB)} & {(k\euro)} & {}\\ \hline
+0.2 & 14 & 2U \\
+0.4 & 17 & 2U \\
+0.8 & 24 & 2U\\
+1.5 & 40 & 2U \\
+\end{tabular}
+\end{center}
+
+The options below, based on the RX sites requirements, correspond to the topologies shown in Figures~\ref{fig:inputnet-direct} and~\ref{fig:network-layer}.
+An option based on a variation of Figure~\ref{fig:network-layer} (Fig~\ref{fig:network-layer}$^*$) is also provided where the optical connections from the FSRU input network layer to SBF nodes are 100 Gb/s. 
+%%%! Tjulin: Does the asterisked figure exist in this document?
+% JW: no ... added a comment to the figure...
+The option for server RAM closest to 1~TB RAM is used in each case.
+As can be seen in the table, the cost for each option is dominated by the number of \RB nodes.
+The main cost driver of the \RB nodes is the amount of RAM.
+For example dropping the RAM to 0.4~TB per \RB node gives costs of 716, 788 and 874~k\euro\ respectively.
+
+\newcommand{\sbfN}{40$^*$\xspace}
+\iffalse
+\begin{center}
+\begin{tabular}{llllll}
+{Option}&{Optical}   &{Switching} &{SBF}  &{Direct} & {Total} \\
+{}      &{Connectors}&{boxes}     &{nodes}&{cables} \\ \hline
+
+Fig~\ref{fig:inputnet-direct}  & $119 \times 2 \times 25$~\gps & n/a & \sbfN & n/a \\
+ & 36~k\euro &  & 960~k\euro &  & {\bf 996~k\euro} \\ \hline
+Fig~\ref{fig:network-layer} & $119 \times 2 \times 25$~\gps & $2\times$ 48-25 6-100~\gps & \sbfN & \\
+   &                               & $1\times$ 48-25 12-100~\gps &     & \\
+   & 36~k\euro                     & 70~k\euro                   & {960~k\euro}  &  & 
+   {\bf 1066~k\euro} \\ \hline
+Fig~\ref{fig:network-layer}$^*$ & $119 \times 2 \times 100$~\gps & $4\times$32-100~\gps & \sbfN & $23 \times 100$~\gps \\
+ & 72 k\euro & 120 k\euro & 960~k\euro  & 1.8~k\euro & {\bf 1154~k\euro}
+\end{tabular}
+\end{center}
+\fi
+\begin{center}
+\begin{tabular}{llllll}
+{Option}&{Optical}   &{Switching} &{SBF}  &{Direct} & {Total} \\
+{}      &{Connectors}&{boxes}     &{nodes}&{cables} \\ \hline
+
+Fig~\ref{fig:inputnet-direct}  & $119 \times 2 \times 25$~\gps & n/a & \sbfN & n/a & {80U}\\
+ & 36~k\euro &  & 960~k\euro &  & {\bf 996~k\euro} \\ \hline
+Fig~\ref{fig:network-layer} & $119 \times 2 \times 25$~\gps & $2\times$ 48-25 6-100~\gps & \sbfN & \\
+   &                               & $1\times$ 48-25 12-100~\gps &  & & {83U} \\
+   & 36~k\euro                     & 70~k\euro                   & {960~k\euro}  &  & 
+   {\bf 1066~k\euro} \\ \hline
+Fig~\ref{fig:network-layer}$^*$ & $119 \times 2 \times 100$~\gps & $4\times$32-100~\gps & \sbfN & $23 \times 100$~\gps & {84U}\\
+ & 72 k\euro & 120 k\euro & 960~k\euro  & 1.8~k\euro & {\bf 1154~k\euro}
+\end{tabular}
+\end{center}
+
+\newpage
+%\appendix{\large \bf Appendix: Future outlook}
+%\subsection*{Future hardware outlook}
+%% CFE: "future outlook" looks like a tautology to me
+\section{Future outlook}
+\subsection*{Future hardware outlook}
+
+During 2019 new CPU generations from both AMD and Intel will be launched. The AMD processors are expected to bring significant increases in the number and speed of cores, while Intel is expected to bring more modest improvements. Still, a small improvement in the AVX-512 unit could bring big overall performance benefits for our use case.
+
+At the moment AMD has higher main memory bandwidth than Intel server processors, due to four memory channels per processor rather than Intel's three. This difference is foreseen to last at least the next year or two. 
+
+There is also likely that new CPUs will bring PCI Express Generation 4, which is a doubling of the data rate for I/O. This might make it possible to pack more 100~Gb/s network interfaces into a single card or possible to use 200~Gb/s Infiniband. The current roadmaps indicate that AMD will launch CPUs with PICe Gen4 during 2019, and Intel in the middle of 2020.
+
+The biggest cost for the on site computing is the RAM for the ring buffer, which is historically expensive (twice as expensive during 2018 as in 2017). The prices might be going down too.
+
+Newer SSD technologies, either flash or phase change based, might make it possible to build a cheaper \RB\ if they are reliable enough or cheap enough to overprovision sufficiently. Using something else than RAM means moving the data many more times over I/O lanes which probably requires PCIe Gen4 as well as more CPU resources (from HPC2N benchmarks, 2~GB/s disk I/O is enough to saturate a single core, which then is not available for FIR filters).
+
+An interesting possibility for ring buffer storage device is the phase change technology developed by Intel and Micron (Optane\texttrademark). This technology has earlier been used in SATA and NVMe connected storage devices but recently Optane DIMM memory modules has also became available. Optane DIMMs are slower than normal memory modules, but they are able to keep the data permanently in memory. At least in principle, Optane DIMMs could be used in ring buffer instead of normal DIMMs. It is, however, yet unclear what kind of detailed specifications Optane DIMMs have and how competitively they will be priced. In addition, so far Optane DIMMs have been available only for Intel platforms. The use of Optane DIMMs may rule out AMD as a CPU vendor.
+
+The price for 25~Gb/s SFP28 optics modules is likely to drop from today's levels, since this is a very new technology. Rough price parity with 10~Gb/s is expected in a year or two from now, which would cut that cost by almost an order of magnitude.
+\end{appendices}
+\end{document}
